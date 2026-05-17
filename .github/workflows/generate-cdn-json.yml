@@ -12,7 +12,6 @@ on:
       - '**/*.svg'
   workflow_dispatch:
 
-# 👇 这里加了权限，解决 403
 permissions:
   contents: write
 
@@ -55,10 +54,15 @@ jobs:
           done
           echo "}" >> "$OUTPUT"
 
-      - name: 提交更新
+      - name: 提交更新（智能訊息）
         uses: EndBug/add-and-commit@v9
         with:
-          message: "🤖 首次生成/更新 CDN 映射表"
+          message: |
+            {% if exists('mapped.json') %}
+            🤖 自動更新 CDN 映射表
+            {% else %}
+            🤖 首次建立 CDN 映射表
+            {% endif %}
           add: "mapped.json"
           committer_name: GitHub Actions
           committer_email: actions@github.com
