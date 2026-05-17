@@ -10,6 +10,7 @@ on:
       - '**/*.gif'
       - '**/*.webp'
       - '**/*.svg'
+      - '.github/workflows/generate-cdn-json.yml'
   workflow_dispatch:
 
 permissions:
