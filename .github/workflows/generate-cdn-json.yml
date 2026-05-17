@@ -10,7 +10,11 @@ on:
       - '**/*.gif'
       - '**/*.webp'
       - '**/*.svg'
-  workflow_dispatch:  # 👈 加了这个：允许你手动点一下运行
+  workflow_dispatch:
+
+# 👇 这里加了权限，解决 403
+permissions:
+  contents: write
 
 jobs:
   build-json:
