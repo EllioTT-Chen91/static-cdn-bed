@@ -1,0 +1,60 @@
+name: Generate CDN Mapping JSON
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '**/*.png'
+      - '**/*.jpg'
+      - '**/*.jpeg'
+      - '**/*.gif'
+      - '**/*.webp'
+      - '**/*.svg'
+  workflow_dispatch:  # 👈 加了这个：允许你手动点一下运行
+
+jobs:
+  build-json:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 生成 mapped.json
+        run: |
+          USER="EllioTT-Chen91"
+          REPO="static-cdn-bed"
+          BRANCH="main"
+          OUTPUT="mapped.json"
+
+          echo "{" > "$OUTPUT"
+          first=1
+          find . -type f \( \
+              -iname "*.png" -o \
+              -iname "*.jpg" -o \
+              -iname "*.jpeg" -o \
+              -iname "*.gif" -o \
+              -iname "*.webp" -o \
+              -iname "*.svg" \
+          \) | grep -v "/\." | grep -v "$OUTPUT" | sort | while read -r file; do
+              relpath="${file#./}"
+              encoded=$(python3 -c "import urllib.parse; print(urllib.parse.quote('$relpath'))")
+              cdn="https://cdn.jsdelivr.net/gh/$USER/$REPO@$BRANCH/$encoded"
+              
+              if [ $first -eq 1 ]; then
+                  first=0
+              else
+                  echo "," >> "$OUTPUT"
+              fi
+              printf "\"%s\":\"%s\"" "$relpath" "$cdn" >> "$OUTPUT"
+          done
+          echo "}" >> "$OUTPUT"
+
+      - name: 提交更新
+        uses: EndBug/add-and-commit@v9
+        with:
+          message: "🤖 首次生成/更新 CDN 映射表"
+          add: "mapped.json"
+          committer_name: GitHub Actions
+          committer_email: actions@github.com
